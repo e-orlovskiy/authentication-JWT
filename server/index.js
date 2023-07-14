@@ -4,6 +4,7 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const mongoose = require('mongoose')
 const router = require('./router/index')
+const errorMiddleware = require('./middlewares/error-middleware')
 
 const DB_URL = process.env.DB_URL
 const PORT = process.env.PORT
@@ -29,6 +30,9 @@ app.use('/api', router)
 // Использование /api в URL позволяет создать четкую идентификацию для маршрутов, которые предназначены для 
 // работы с вашим API, отличая их от других маршрутов, которые могут быть настроены для других частей вашего 
 // приложения, таких как страницы веб-сайта.
+
+app.use(errorMiddleware)
+// ВАЖНО, ЧТОБЫ ОН БЫЛ ПОСЛЕДНИМ
 
 const start = async () => {
   try {
