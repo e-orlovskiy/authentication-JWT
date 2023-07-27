@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt')
 const uuid = require('uuid')
+const mongoose = require('mongoose');
 
 const UserModel = require('../models/user-model')
+const TodosModel = require('../models/todos-model')
 const mailService = require('../service/mail-service')
 const tokenService = require('../service/token-service')
 const UserDto = require('../data-transfer-objects/user-dto')
@@ -42,6 +44,7 @@ class UserService {
     if (!user) {
       throw ApiError.BadRequest('Пользователь с таким email не найден')
     }
+    // ! не пускать пользователя, который не активировал акк по email
     const isPassEquals = await bcrypt.compare(password, user.password)
     if (!isPassEquals) {
       throw ApiError.BadRequest('Неверный пароль')
@@ -64,7 +67,7 @@ class UserService {
       throw ApiError.UnauthorizedError()
     }
 
-    const userData = tokenService.validateRefreshToken(refreshToken)
+    const userData = await tokenService.validateRefreshToken(refreshToken)
     const tokenFromDB = await tokenService.findToken(refreshToken)
     if (!userData || !tokenFromDB) {
       throw ApiError.UnauthorizedError()
@@ -76,6 +79,35 @@ class UserService {
 
     await tokenService.saveToken(userDto.id, tokens.refreshToken)
     return { ...tokens, user: userDto }
+  }
+
+  async getTodos(userId) {
+    const user = await UserModel.findOne({ _id: userId });
+    if (!user) {
+      throw ApiError.BadRequest('Такого пользователя не существует');
+    }
+    const todos = await TodosModel.find({ userId });
+
+    return todos;
+  }
+
+  async addTodo(userId, text, done, date, favorite) {
+    try {
+      // Создаем новую задачу с помощью модели TodosModel
+      const newTodo = new TodosModel({
+        userId: new mongoose.Types.ObjectId(userId),
+        text: text,
+        done: done,
+        date: date,
+        favorite: favorite
+      });
+
+      const savedTodo = await newTodo.save();
+
+      return savedTodo; // Возвращаем сохраненную задачу
+    } catch (error) {
+      throw new Error('Не удалось добавить задачу: ' + error.message);
+    }
   }
 
 }

@@ -63,9 +63,23 @@ class UserController {
     }
   }
 
-  async getProfile(req, res, next) {
+  async getTodos(req, res, next) {
     try {
+      const { userId } = req.body
+      const todos = await userService.getTodos(userId)
+      return res.json(todos)
+    } catch (err) {
+      next(err)
+    }
+  }
 
+  async addNewTodo(req, res, next) {
+    try {
+      const { userId, text, done, date, favorite } = req.body
+
+      const newTodo = await userService.addTodo(userId, text, done, date, favorite);
+      console.log("Добавлена новая задача:", newTodo);
+      return res.json(newTodo)
     } catch (err) {
       next(err)
     }

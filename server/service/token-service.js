@@ -7,7 +7,7 @@ class TokenService {
     const JWT_ACCESS_SECRET_KEY = process.env.JWT_ACCESS_SECRET
     const JWT_REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET
 
-    const accessToken = jwt.sign(payload, JWT_ACCESS_SECRET_KEY, { expiresIn: '15m' })
+    const accessToken = jwt.sign(payload, JWT_ACCESS_SECRET_KEY, { expiresIn: '30s' })
     const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET_KEY, { expiresIn: '30d' })
 
     return {
@@ -53,7 +53,7 @@ class TokenService {
 
   // поиск токена в БД
   async findToken(refreshToken) {
-    const tokenData = await tokenModel.findOne({ refreshToken })
+    const tokenData = await TokenModel.findOne({ refreshToken })
     return tokenData
   }
 }
